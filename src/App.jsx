@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import VistaLogin from "./vistas/VistaLogin";
 import VistaDashboard from "./vistas/VistaDashboard";
 import VistaAdmin from "./vistas/VistaAdmin";
+import { eliminar_token } from "./api/api.js";
 
 export default function App() {
   const [usuarioActivo, setUsuarioActivo] = useState(null);
@@ -14,9 +15,11 @@ export default function App() {
     if (sesionGuardada) {
       try {
         const datos = JSON.parse(sesionGuardada);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUsuarioActivo(datos);
         setVistaActual(datos.rol?.toLowerCase() === "admin" ? "admin" : "dashboard");
       } catch (e) {
+        console.log(e);
         localStorage.removeItem("usuario_sesion");
       }
     }
@@ -31,6 +34,7 @@ export default function App() {
     localStorage.removeItem("usuario_sesion");
     setUsuarioActivo(null);
     setVistaActual("admin");
+    eliminar_token();
   };
 
   // 1. Si no hay sesión, mostrar Login

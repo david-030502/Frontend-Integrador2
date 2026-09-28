@@ -162,7 +162,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
     setAtendiendoId(idAlerta);
     setErrorGlobal("");
     try {
-      await atender_alerta(idAlerta, usuario.id_usuario);
+      await atender_alerta(idAlerta);
       setMensajeExito(`Alerta #${idAlerta} marcada como atendida.`);
       await cargarAlertas();
       setTimeout(() => setMensajeExito(""), 4000);

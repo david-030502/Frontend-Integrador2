@@ -99,10 +99,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
   // 4. Acción al presionar el botón "Atender" en una alerta
   const manejarAtender = async (idAlerta) => {
     try {
-      // Obtenemos el id del usuario actual o usamos 1 por defecto
-      const idUsuarioActual = usuario?.id_usuario || 1;
-      
-      await atender_alerta(idAlerta, idUsuarioActual);
+      await atender_alerta(idAlerta);
       cargarAlertas(); // Refresca la tabla tras la atención
     } catch (err) {
       alert("No se pudo marcar la alerta como atendida");
