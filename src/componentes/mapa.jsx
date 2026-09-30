@@ -33,23 +33,26 @@ export default function MapaMonitoreo({ latitud, longitud, identificador }) {
   const tieneGps = latitud != null && longitud != null;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+    <div className="bg-white border border-slate-200 rounded p-4 space-y-3">
+      {/* Encabezado y etiqueta de fuente */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white">Ubicación GPS en Tiempo Real</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            Ubicación GPS en Tiempo Real
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
             {tieneGps 
               ? `Coordenadas: ${latValida.toFixed(4)}, ${lngValida.toFixed(4)}` 
               : "Sin coordenadas GPS registradas en la última lectura"}
           </p>
         </div>
-        <span className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-mono">
+        <span className="text-[11px] px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-500 font-mono">
           OpenStreetMap
         </span>
       </div>
 
       {/* Contenedor del mapa */}
-      <div className="h-80 w-full rounded-xl overflow-hidden border border-slate-800 relative z-0">
+      <div className="h-72 w-full rounded border border-slate-200 overflow-hidden relative z-0">
         <MapContainer
           center={[latValida, lngValida]}
           zoom={13}
@@ -64,9 +67,9 @@ export default function MapaMonitoreo({ latitud, longitud, identificador }) {
           {tieneGps && (
             <Marker position={[latValida, lngValida]}>
               <Popup>
-                <div className="text-slate-900 text-xs">
-                  <p className="font-bold">{identificador || "Camión en ruta"}</p>
-                  <p>Posición actualizada</p>
+                <div className="text-slate-800 text-xs leading-snug">
+                  <p className="font-semibold">{identificador || "Camión en ruta"}</p>
+                  <p className="text-slate-500">Posición actualizada</p>
                 </div>
               </Popup>
             </Marker>
