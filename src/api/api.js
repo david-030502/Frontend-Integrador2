@@ -1,10 +1,18 @@
 const URL_BASE = "http://127.0.0.1:8000/api"
 
+function obtenerHeaders(){
+  const token = localStorage.getItem("token");
+  return{
+    "Content-Type": "application/json",
+    ...(token ? {"Authorization":`Bearer ${token}`}:{})
+  };
+}
+
 //Iniciar sesión
 export async function iniciar_sesion(email, contrasena) {
     const respuesta = await fetch(`${URL_BASE}/usuarios/login`,{
         method: "POST",
-        headers:{"Content-Type" : "application/json"},
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({email:email, contrasena:contrasena}),
     });
 
@@ -16,7 +24,11 @@ export async function iniciar_sesion(email, contrasena) {
 
 //Listar camiones registrados
 export async function listar_dispositivos() {
-    const respuesta = await fetch(`${URL_BASE}/dispositivos/`);
+    const respuesta = await fetch(`${URL_BASE}/dispositivos/`, {
+        method: "GET",
+        headers: obtenerHeaders(),
+    });
+        
     if (!respuesta.ok){
         throw new Error("No se puede obtener la lista de camiones");
     }
@@ -26,21 +38,22 @@ export async function listar_dispositivos() {
 //Registrar camion
 export async function crear_dispositivo(datos) {
   const respuesta = await fetch(`${URL_BASE}/dispositivos/`,{
-    method: "POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify(datos),
+      method: "POST",
+      headers: obtenerHeaders(),
+      body: JSON.stringify(datos),
   });
   if (!respuesta.ok){
     throw new Error("Error al registrar dispositivo");
   }
   return await respuesta.json();
-
-  
 }
 
 //Obtener ultimo registro por camion
 export async function obtener_ultimo_registro_byunidad(id_dispositivo) {
-    const respuesta = await fetch(`${URL_BASE}/telemetria/dispositivo/${id_dispositivo}/ultima`)
+    const respuesta = await fetch(`${URL_BASE}/telemetria/dispositivo/${id_dispositivo}/ultima`,{
+        method: "GET",
+        headers: obtenerHeaders(),
+    })
     if (!respuesta.ok){
         throw new Error("Sin lecturas de telemetria disponible");
     }
@@ -49,7 +62,10 @@ export async function obtener_ultimo_registro_byunidad(id_dispositivo) {
 
 //Obtener ultimos registros por camion
 export async function obtener_lecturas_byunidad(id_dispositivo, limite=20) {
-    const respuesta = await fetch(`${URL_BASE}/telemetria/dispositivo/${id_dispositivo}?limite=${limite}`);
+    const respuesta = await fetch(`${URL_BASE}/telemetria/dispositivo/${id_dispositivo}?limite=${limite}`,{
+        method: "GET",
+        headers: obtenerHeaders(),
+    });
     if (!respuesta.ok){
         throw new Error("Error al consultar historial");
     }
@@ -58,7 +74,10 @@ export async function obtener_lecturas_byunidad(id_dispositivo, limite=20) {
 
 // Obtener alertas desde la API
 export async function obtener_alertas_activas() {
-  const respuesta = await fetch(`${URL_BASE}/alertas/`);
+  const respuesta = await fetch(`${URL_BASE}/alertas/`,{
+        method: "GET",
+        headers: obtenerHeaders(),
+  });
   if (!respuesta.ok) {
     throw new Error("Error al obtener alertas");
   }
@@ -73,7 +92,10 @@ export async function obtener_alertas_activas() {
 
 //Obtener todas las alertas para auditoria
 export async function listar_historial_alertas(limite=50) {
-  const respuesta = await fetch(`${URL_BASE}/alertas/?limite=${limite}`);
+  const respuesta = await fetch(`${URL_BASE}/alertas/?limite=${limite}`,{
+      method: "GET",
+      headers: obtenerHeaders(),
+  });
   if (!respuesta.ok){
     throw new Error("Error al obtener historial de alertas");
   }
@@ -84,7 +106,7 @@ export async function listar_historial_alertas(limite=50) {
 export async function atender_alerta(id_alerta, id_usuario) {
   const respuesta = await fetch(`${URL_BASE}/alertas/${id_alerta}/atender`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: obtenerHeaders(),
     body: JSON.stringify({id_usuario:Number(id_usuario)}),
   });
 
@@ -96,7 +118,10 @@ export async function atender_alerta(id_alerta, id_usuario) {
 
 //Obtener usuarios registrados
 export async function listar_usuarios() {
-  const respuesta = await fetch(`${URL_BASE}/usuarios/`);
+  const respuesta = await fetch(`${URL_BASE}/usuarios/`,{
+      method: "GET",
+      headers: obtenerHeaders(),
+  });
   if (!respuesta.ok){
     throw new Error("Error al obtener usuarios");
   }
@@ -107,7 +132,7 @@ export async function listar_usuarios() {
 export async function crear_usuario(datos) {
   const respuesta = await fetch(`${URL_BASE}/usuarios/`,{
     method: "POST",
-    headers:{"Content-Type" : "application/json"},
+    headers: obtenerHeaders(),
     body: JSON.stringify(datos),
   });
   if (!respuesta.ok){

@@ -18,6 +18,7 @@ export default function LoginView({ onLoginExitoso }) {
       // Enviamos email y contraseña
       const datos = await iniciar_sesion(email, contrasena);
 
+      localStorage.setItem("token", datos.access_token);
       localStorage.setItem("usuario_sesion", JSON.stringify(datos));
       onLoginExitoso(datos);
     } catch (err) {
