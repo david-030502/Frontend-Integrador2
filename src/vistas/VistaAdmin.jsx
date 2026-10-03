@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { 
   listar_usuarios, 
-  crear_usuario, 
+  crear_usuario,
+  actualizar_usuario,
   listar_dispositivos, 
   crear_dispositivo,
   listar_historial_alertas,
@@ -36,6 +37,14 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
   const [emailUsuario, setEmailUsuario] = useState("");
   const [contrasenaUsuario, setContrasenaUsuario] = useState("");
   const [guardandoUsuario, setGuardandoUsuario] = useState(false);
+
+  const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
+  const [usuarioEditando, setUsuarioEditando] = useState(null);
+  const [nombreEditar, setNombreEditar] = useState("");
+  const [emailEditar, setEmailEditar] = useState("");
+  const [contrasenaEditar, setContrasenaEditar] = useState("");
+  const [rolEditar, setRolEditar] = useState("operador");
+  const [guardandoEdicion, setGuardandoEdicion] = useState(false);
 
   // Estados de Dispositivos
   const [dispositivos, setDispositivos] = useState([]);
@@ -130,6 +139,43 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
     }
   };
 
+  const handleEditarUsuario = (usuario) => {
+    setUsuarioEditando(usuario);
+    setNombreEditar(usuario.nombre);
+    setEmailEditar(usuario.email);
+    setContrasenaEditar("");
+    setRolEditar(usuario.rol?.toLowerCase() || "operador");
+    setMostrarModalEditar(true);
+  };
+
+  //Actualizar usuario
+  const handleGuardarEdicion = async() => {
+    setErrorGlobal("");
+    try{
+      setGuardandoEdicion(true);
+      const datos = {
+        nombre: nombreEditar,
+        email: emailEditar,
+        rol: rolEditar,
+      };
+      if (contrasenaEditar.trim() != ""){
+        datos.contrasena = contrasenaEditar;
+      }
+      await actualizar_usuario(usuarioEditando.id_usuario, datos);
+      setMensajeExito("Usuario actualizado correctamente");
+      setMostrarModalEditar(false);
+      setUsuarioEditando(null);
+
+      await cargarUsuarios()
+      setTimeout(() => setMensajeExito(""), 4000); 
+      } catch (err){
+        setErrorGlobal(err.message || "No se puede actualizar el usuario");
+      } finally{
+        setGuardandoEdicion(false);
+      }
+    }
+
+
   // Registrar Dispositivo
   const handleSubmitDispositivo = async (e) => {
     e.preventDefault();
@@ -193,7 +239,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                 Panel de Administración
               </h1>
               <p className="text-xs text-slate-500">
-                Avícola Los Andes — Control de accesos, flota y trazabilidad
+                Avícola Los Andes
               </p>
             </div>
           </div>
@@ -247,7 +293,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
               <h2 className="font-semibold text-sm text-slate-900">Gestión de Usuarios</h2>
             </div>
             <p className="text-xs text-slate-500">
-              {usuarios.length} operadores y administradores en sistema.
+              {usuarios.length} operadores y administradores en sistema
             </p>
           </button>
 
@@ -263,10 +309,10 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
           >
             <div className="flex items-center gap-2 text-slate-700 mb-1">
               <Truck className="w-4 h-4 text-slate-500" />
-              <h2 className="font-semibold text-sm text-slate-900">Dispositivos y Flota</h2>
+              <h2 className="font-semibold text-sm text-slate-900">Gestión de Dispositivos</h2>
             </div>
             <p className="text-xs text-slate-500">
-              {dispositivos.length} unidades telemáticas registradas.
+              {dispositivos.length} unidades registradas
             </p>
           </button>
 
@@ -283,7 +329,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2 text-slate-700">
                 <AlertTriangle className="w-4 h-4 text-slate-500" />
-                <h2 className="font-semibold text-sm text-slate-900">Histórico de Alertas</h2>
+                <h2 className="font-semibold text-sm text-slate-900">Historial de Alertas</h2>
               </div>
               {alertasPendientes > 0 && (
                 <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-red-50 text-red-700 border border-red-200">
@@ -292,7 +338,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
               )}
             </div>
             <p className="text-xs text-slate-500">
-              Auditoría y trazabilidad de contingencias operativas.
+              Auditoría y trazabilidad de alertas operativas
             </p>
           </button>
         </section>
@@ -326,14 +372,6 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={cargarUsuarios}
-                  disabled={cargandoUsuarios}
-                  className="p-1.5 bg-white border border-slate-300 rounded text-slate-600 hover:bg-slate-50 transition-colors"
-                  title="Recargar"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${cargandoUsuarios ? "animate-spin text-slate-900" : ""}`} />
-                </button>
 
                 <button
                   onClick={() => {
@@ -356,6 +394,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                     <th className="py-2.5 px-4">Nombre Completo</th>
                     <th className="py-2.5 px-4">Correo Electrónico</th>
                     <th className="py-2.5 px-4">Rol de Sistema</th>
+                    <th className="py-2.5 px-4">Acción</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -384,6 +423,12 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                             {u.rol}
                           </span>
                         </td>
+                        <td className="py-2.5 px-4">
+                          <button
+                            onClick={() => handleEditarUsuario(u)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors"
+                          >Editar</button>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -402,20 +447,11 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                   Unidades de Transporte y Sensores
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Dispositivos IoT asignados al monitoreo de la cadena de frío
+                  Dispositivos IoT instalados para monitoreo
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={cargarDispositivos}
-                  disabled={cargandoDispositivos}
-                  className="p-1.5 bg-white border border-slate-300 rounded text-slate-600 hover:bg-slate-50 transition-colors"
-                  title="Recargar"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${cargandoDispositivos ? "animate-spin text-slate-900" : ""}`} />
-                </button>
-
                 <button
                   onClick={() => {
                     setErrorModal("");
@@ -484,21 +520,12 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
             <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
               <div>
                 <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Historial y Auditoría de Contingencias
+                  Historial y Auditoría de alertas
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Registro cronológico de advertencias telemáticas generadas durante el trayecto
+                  Registro de alertas generadas durante el transporte
                 </p>
               </div>
-
-              <button
-                onClick={cargarAlertas}
-                disabled={cargandoAlertas}
-                className="p-1.5 bg-white border border-slate-300 rounded text-slate-600 hover:bg-slate-50 transition-colors"
-                title="Recargar alertas"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${cargandoAlertas ? "animate-spin text-slate-900" : ""}`} />
-              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -673,6 +700,127 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                   {guardandoUsuario ? "Guardando..." : "Guardar"}
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* MODAL EDITAR USUARIO */}
+      {mostrarModalEditar && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-slate-200 rounded-lg w-full max-w-md p-6 shadow-xl relative">
+
+            <button
+              onClick={() => setMostrarModalEditar(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h3 className="text-sm font-semibold text-slate-900 mb-0.5 flex items-center gap-2">
+              <Users className="w-4 h-4 text-slate-600" />
+              Editar Usuario
+            </h3>
+
+            <p className="text-xs text-slate-500 mb-4">
+              Modifique los datos del usuario seleccionado
+            </p>
+
+            {errorGlobal && (
+              <div className="mb-4 p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorGlobal}</span>
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleGuardarEdicion();
+              }}
+              className="space-y-3"
+            >
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Nombre Completo
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  maxLength={70}
+                  value={nombreEditar}
+                  onChange={(e) => setNombreEditar(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Correo Electrónico
+                </label>
+
+                <input
+                  type="email"
+                  required
+                  maxLength={120}
+                  value={emailEditar}
+                  onChange={(e) => setEmailEditar(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Nueva Contraseña
+                </label>
+
+                <input
+                  type="password"
+                  minLength={8}
+                  maxLength={30}
+                  value={contrasenaEditar}
+                  onChange={(e) => setContrasenaEditar(e.target.value)}
+                  placeholder="Dejar vacío para mantener la actual"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Rol Asignado
+                </label>
+
+                <select
+                  value={rolEditar}
+                  onChange={(e) => setRolEditar(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                >
+                  <option value="operador">Operador</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3">
+
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalEditar(false)}
+                  className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 font-medium rounded text-xs hover:bg-slate-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={guardandoEdicion}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded text-xs transition-colors disabled:opacity-50"
+                >
+                  {guardandoEdicion ? "Guardando..." : "Guardar cambios"}
+                </button>
+
+              </div>
+
             </form>
           </div>
         </div>

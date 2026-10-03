@@ -17,7 +17,8 @@ export async function iniciar_sesion(email, contrasena) {
     });
 
     if (!respuesta.ok){
-        throw new Error("Credenciales incorrectas")
+        const error = await respuesta.json().catch(() => ({}));
+        throw new Error(error.detail || "Credenciales incorrectas")
     }
     return await respuesta.json();
 }
@@ -130,13 +131,46 @@ export async function listar_usuarios() {
 
 //Registrar nuevo usuario 
 export async function crear_usuario(datos) {
-  const respuesta = await fetch(`${URL_BASE}/usuarios/`,{
+  const respuesta = await fetch(`${URL_BASE}/usuarios/register`,{
     method: "POST",
     headers: obtenerHeaders(),
     body: JSON.stringify(datos),
   });
   if (!respuesta.ok){
-    throw new Error("Error al registrar usuario");
+    const error = await respuesta.json().catch(() => ({}));
+    if (Array.isArray(error.detail)){
+      const mensajes = error.detail.map((item) => {
+        if (item.type === "string_too_short"){
+          return "La contraseña debe tener más de 8 caracteres";
+        }
+        return item.msg;
+      });
+      throw new Error(mensajes.join(""));
+    }
+    throw new Error(error.detail || "Error al registrar usuario");
+  }      
+  return await respuesta.json();
+}
+
+//Actualizar usuario
+export async function actualizar_usuario(id_usuario, datos) {
+  const respuesta = await fetch(`${URL_BASE}/usuarios/${id_usuario}`,{
+    method: "PUT",
+    headers: obtenerHeaders(),
+    body: JSON.stringify(datos),
+  });
+  if (!respuesta.ok){
+    const error = await respuesta.json().catch(() => ({}));
+    if (Array.isArray(error.detail)){
+      const mensajes = error.detail.map((item) => {
+        if (item.type === "string_too_short"){
+          return "La contraseña debe tener más de 8 caracteres";
+        }
+        return item.msg;
+      });
+      throw new Error(mensajes.join(""));
+    }
+    throw new Error(error.detail || "Error al actualizar usuario");
   }      
   return await respuesta.json();
 }
