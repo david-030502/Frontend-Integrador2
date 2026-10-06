@@ -1,4 +1,4 @@
-const URL_BASE = "http://127.0.0.1:8000/api"
+const URL_BASE = "https://backend.smashiv.com/api"
 
 function obtenerHeaders(){
   const token = localStorage.getItem("token");
