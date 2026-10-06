@@ -28,6 +28,21 @@ export default function TablaAlertas({ alertas, onAtenderAlerta }) {
     }
   };
 
+  const obtenerNombreNivel = (nivel) => {
+    switch (nivel?.toLowerCase()) {
+      case "temp_low":
+      case "temp_high":
+      case "gas_high":
+        return "Crítico";
+
+      case "hum_low":
+      case "hum_high":
+        return "Advertencia";
+
+      default:
+        return "Alerta";
+    }
+  };
   return (
     <div className="bg-white border border-slate-200 rounded p-4 space-y-3">
       {/* Encabezado */}
@@ -59,13 +74,13 @@ export default function TablaAlertas({ alertas, onAtenderAlerta }) {
               <tr key={alerta.id_alerta} className="hover:bg-slate-50 transition-colors">
                 <td className="py-2.5 px-3 whitespace-nowrap">
                   <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium border ${obtenerEstiloNivel(alerta.nivel_alerta || alerta.tipo_alerta)}`}>
-                    {alerta.tipo_alerta || "Alerta"}
+                    {obtenerNombreNivel(alerta.tipo_alerta)}
                   </span>
                 </td>
                 <td className="py-2.5 px-3 text-slate-800">
                   <div className="flex items-center gap-1.5">
                     <AlertCircle className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    <span>{alerta.mensaje || alerta.tipo_alerta || "Alerta registrada"}</span>
+                    <span>{alerta.descripcion || alerta.tipo_alerta || "Alerta registrada"}</span>
                   </div>
                 </td>
                 <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">

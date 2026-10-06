@@ -22,6 +22,8 @@ import {
   eliminar_usuario,
   listar_dispositivos, 
   crear_dispositivo,
+  actualizar_dispositivo,
+  eliminar_dispositivo,
   listar_historial_alertas,
   atender_alerta
 } from "../api/api";
@@ -55,6 +57,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
   const [nombreChofer, setNombreChofer] = useState("");
   const [estadoDispositivo, setEstadoDispositivo] = useState("Activo");
   const [guardandoDispositivo, setGuardandoDispositivo] = useState(false);
+  const [dispositivoEditando, setDispositivoEditando] = useState(null);
 
   // Estados de Alertas
   const [alertas, setAlertas] = useState([]);
@@ -220,6 +223,64 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
       setGuardandoDispositivo(false);
     }
   };
+
+  //Editar dispositivo
+  const handleGuardarEdicionDispositivo = async () => {
+    if (!dispositivoEditando) {
+      return;
+    }
+
+    setGuardandoDispositivo(true);
+    setErrorGlobal("");
+
+    try {
+      await actualizar_dispositivo(
+        dispositivoEditando.id_dispositivo,
+        {
+          placa: dispositivoEditando.placa,
+          nombre_chofer: dispositivoEditando.nombre_chofer,
+          estado: dispositivoEditando.estado,
+        }
+      );
+
+      setDispositivoEditando(null);
+      setMensajeExito("Dispositivo actualizado correctamente");
+
+      await cargarDispositivos();
+
+      setTimeout(() => setMensajeExito(""), 4000);
+
+    } catch (err) {
+      setErrorGlobal(
+        err.message || "Error al actualizar dispositivo"
+      );
+    } finally {
+      setGuardandoDispositivo(false);
+    }
+  };
+
+  //Eliminar dispositivo
+  const handleEliminarDispositivo = async (dispositivo) => {
+    const confirmar = window.confirm(
+      `¿Está seguro de eliminar el dispositivo "${dispositivo.placa}"?`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    setErrorGlobal("");
+
+    try {
+      await eliminar_dispositivo(dispositivo.id_dispositivo);
+      setMensajeExito("Dispositivo eliminado correctamente");
+      await cargarDispositivos();
+      setTimeout(() => setMensajeExito(""), 4000);
+    } catch (err) {
+      setErrorGlobal(err.message || "No se puede eliminar el dispositivo");
+    }
+  };
+  
 
   // Resolver / Atender Alerta
   const handleAtenderAlerta = async (idAlerta) => {
@@ -496,16 +557,17 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                     <th className="py-2.5 px-4">Placa del Vehículo</th>
                     <th className="py-2.5 px-4">Conductor Asignado</th>
                     <th className="py-2.5 px-4">Estado Operativo</th>
+                    <th className="py-2.5 px-4 text-right">Acción</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {cargandoDispositivos && dispositivos.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="text-center py-8 text-slate-400">Cargando dispositivos...</td>
+                      <td colSpan="5" className="text-center py-8 text-slate-400">Cargando dispositivos...</td>
                     </tr>
                   ) : dispositivos.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="text-center py-8 text-slate-400">No hay dispositivos registrados en la flota.</td>
+                      <td colSpan="5" className="text-center py-8 text-slate-400">No hay dispositivos registrados en la flota.</td>
                     </tr>
                   ) : (
                     dispositivos.map((d) => (
@@ -528,6 +590,21 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                             {d.estado}
                           </span>
                         </td>
+                        <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                          <button
+                            onClick={() => setDispositivoEditando(d)}
+                            className="px-2.5 py-1 mr-2 bg-white border border-slate-300 rounded text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleEliminarDispositivo(d)}
+                            className="px-2.5 py-1 bg-white border border-red-300 rounded text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                          
+                        </td>
                       </tr>
                     ))
                   )}
@@ -536,6 +613,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
             </div>
           </section>
         )}
+        
 
         {/* 3. SECCIÓN HISTÓRICO DE ALERTAS */}
         {seccionActiva === "alertas" && (
@@ -935,6 +1013,123 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                   {guardandoDispositivo ? "Guardando..." : "Guardar"}
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* MODAL EDITAR DISPOSITIVO */}
+      {dispositivoEditando && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-slate-200 rounded-lg w-full max-w-md p-6 shadow-xl relative">
+
+            <button
+              onClick={() => setDispositivoEditando(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h3 className="text-sm font-semibold text-slate-900 mb-0.5">
+              Editar Dispositivo
+            </h3>
+
+            <p className="text-xs text-slate-500 mb-4">
+              Modifique los datos del dispositivo seleccionado
+            </p>
+
+            {errorGlobal && (
+              <div className="mb-4 p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorGlobal}</span>
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleGuardarEdicionDispositivo();
+              }}
+              className="space-y-3"
+            >
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Placa del Vehículo
+                </label>
+
+                <input
+                  type="text"
+                  maxLength={7}
+                  value={dispositivoEditando.placa}
+                  onChange={(e) =>
+                    setDispositivoEditando({
+                      ...dispositivoEditando,
+                      placa: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Conductor Asignado
+                </label>
+
+                <input
+                  type="text"
+                  maxLength={70}
+                  value={dispositivoEditando.nombre_chofer}
+                  onChange={(e) =>
+                    setDispositivoEditando({
+                      ...dispositivoEditando,
+                      nombre_chofer: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Estado Operativo
+                </label>
+
+                <select
+                  value={dispositivoEditando.estado}
+                  onChange={(e) =>
+                    setDispositivoEditando({
+                      ...dispositivoEditando,
+                      estado: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-900 text-sm focus:outline-none focus:border-slate-500"
+                >
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3">
+
+                <button
+                  type="button"
+                  onClick={() => setDispositivoEditando(null)}
+                  className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 font-medium rounded text-xs hover:bg-slate-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={guardandoDispositivo}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded text-xs transition-colors disabled:opacity-50"
+                >
+                  {guardandoDispositivo ? "Guardando..." : "Guardar cambios"}
+                </button>
+
+              </div>
+
             </form>
           </div>
         </div>

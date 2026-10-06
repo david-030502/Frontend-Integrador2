@@ -1,4 +1,4 @@
-const URL_BASE = "https://backend.smashiv.com/api"
+const URL_BASE = "http://127.0.0.1:8000/api"
 
 function obtenerHeaders(){
   const token = localStorage.getItem("token");
@@ -47,6 +47,43 @@ export async function crear_dispositivo(datos) {
     throw new Error("Error al registrar dispositivo");
   }
   return await respuesta.json();
+}
+
+//Actualizar camion
+export async function actualizar_dispositivo(id_dispositivo, datos) {
+  const respuesta = await fetch(`${URL_BASE}/dispositivos/${id_dispositivo}`, {
+    method: "PUT",
+    headers: obtenerHeaders(),
+    body: JSON.stringify(datos),
+  });
+
+  if (!respuesta.ok) {
+    const error = await respuesta.json().catch(() => ({}));
+
+    if (Array.isArray(error.detail)) {
+      const mensajes = error.detail.map((item) => item.msg);
+      throw new Error(mensajes.join(". "));
+    }
+
+    throw new Error(error.detail || "Error al actualizar dispositivo");
+  }
+
+  return await respuesta.json();
+}
+
+//Eliminar camion
+export async function eliminar_dispositivo(id_dispositivo) {
+  const respuesta = await fetch(`${URL_BASE}/dispositivos/${id_dispositivo}`, {
+    method: "DELETE",
+    headers: obtenerHeaders(),
+  });
+
+  if (!respuesta.ok) {
+    const error = await respuesta.json().catch(() => ({}));
+    throw new Error(error.detail || "Error al eliminar dispositivo");
+  }
+
+  return true;
 }
 
 //Obtener ultimo registro por camion
