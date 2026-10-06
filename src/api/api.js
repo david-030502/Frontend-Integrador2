@@ -174,3 +174,16 @@ export async function actualizar_usuario(id_usuario, datos) {
   }      
   return await respuesta.json();
 }
+
+//eliminar usuarios
+export async function eliminar_usuario(id_usuario) {
+  const respuesta = await fetch(`${URL_BASE}/usuarios/${id_usuario}`,{
+    method : "DELETE",
+    headers: obtenerHeaders(),
+  });
+  if (!respuesta.ok){
+    throw new Error("Error al eliminar usuario");
+  }
+  return true;
+  
+}

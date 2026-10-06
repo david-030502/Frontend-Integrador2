@@ -19,6 +19,7 @@ import {
   listar_usuarios, 
   crear_usuario,
   actualizar_usuario,
+  eliminar_usuario,
   listar_dispositivos, 
   crear_dispositivo,
   listar_historial_alertas,
@@ -175,6 +176,23 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
       }
     }
 
+  //Elimiar usuario
+  const handleEliminarUsuario = async(usuario) => {
+    const confirmar = window.confirm(`¿Está seguro de eliminar al usuario "${usuario.nombre}"?`);
+    if (!confirmar){
+      return;
+    }
+    setErrorGlobal("");
+    try{
+      await eliminar_usuario(usuario.id_usuario);
+      setMensajeExito("Usuario eliminado correctamente");
+      await cargarUsuarios();
+      setTimeout(() => setMensajeExito(""), 4000);
+    }
+    catch (err){
+      setErrorGlobal(err.message || "No se puede eliminar al usuario");
+    }
+  };
 
   // Registrar Dispositivo
   const handleSubmitDispositivo = async (e) => {
@@ -423,11 +441,16 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                             {u.rol}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4">
-                          <button
-                            onClick={() => handleEditarUsuario(u)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors"
-                          >Editar</button>
+                        <td>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditarUsuario(u)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors"
+                            >Editar</button>
+                            <button onClick={() => handleEliminarUsuario(u)}
+                            className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+                            >Eliminar</button>
+                          </div>
                         </td>
                       </tr>
                     ))
