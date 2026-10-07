@@ -13,7 +13,9 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { 
   listar_usuarios, 
@@ -68,6 +70,21 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
   const [mensajeExito, setMensajeExito] = useState("");
   const [errorGlobal, setErrorGlobal] = useState("");
   const [errorModal, setErrorModal] = useState("");
+
+  //Paginacion
+  const [paginaAlertas, setPaginaAlertas] = useState(1);
+  const elementosPorPaginaAlertas = 15;
+  const listaAlertas = Array.isArray(alertas) 
+  ? alertas 
+  : (alertas?.alertas || alertas?.data || []);
+
+  const totalAlertas = listaAlertas.length;
+  const totalPaginasAlertas = Math.ceil(totalAlertas / elementosPorPaginaAlertas);
+  const indiceInicioAlertas = (paginaAlertas - 1) * elementosPorPaginaAlertas;
+  const alertasVisibles = listaAlertas.slice(
+    indiceInicioAlertas, 
+    indiceInicioAlertas + elementosPorPaginaAlertas
+  );
 
   // Carga de datos
   const cargarUsuarios = async () => {
@@ -305,7 +322,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
     return isNaN(fecha.getTime()) ? fechaStr : fecha.toLocaleString();
   };
 
-  const alertasPendientes = alertas.filter((a) => !a.fecha_vista).length;
+  const alertasPendientes = (alertas.alertas || []).filter((a) => !a.fecha_vista).length;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
@@ -627,6 +644,10 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                   Registro de alertas generadas durante el transporte
                 </p>
               </div>
+
+              <span className="text-xs px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">
+                Total: {totalAlertas} {totalAlertas === 1 ? "registro" : "registros"}
+              </span>
             </div>
 
             <div className="overflow-x-auto">
@@ -635,6 +656,7 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                   <tr>
                     <th className="py-2.5 px-4">ID</th>
                     <th className="py-2.5 px-4">Tipo / Causa de Alerta</th>
+                    <th className="py-2.5 px-4">Vehículo</th>
                     <th className="py-2.5 px-4">Fecha y Hora</th>
                     <th className="py-2.5 px-4">Lectura Ref.</th>
                     <th className="py-2.5 px-4">Estado de Atención</th>
@@ -642,16 +664,20 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
-                  {cargandoAlertas && alertas.length === 0 ? (
+                  {cargandoAlertas && totalAlertas === 0 ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-8 text-slate-400">Cargando historial de alertas...</td>
+                      <td colSpan="7" className="text-center py-8 text-slate-400"> {/* <-- CAMBIAR A 7 */}
+                        Cargando historial de alertas...
+                      </td>
                     </tr>
-                  ) : alertas.length === 0 ? (
+                  ) : totalAlertas === 0 ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-8 text-slate-400">No se registran contingencias en el sistema.</td>
+                      <td colSpan="7" className="text-center py-8 text-slate-400"> {/* <-- CAMBIAR A 7 */}
+                        No se registran contingencias en el sistema.
+                      </td>
                     </tr>
                   ) : (
-                    alertas.map((a) => {
+                    alertasVisibles.map((a) => {
                       const estaAtendida = !!a.fecha_vista;
                       return (
                         <tr key={a.id_alerta} className="hover:bg-slate-50 transition-colors">
@@ -662,6 +688,9 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                               {a.tipo_alerta}
                             </span>
                           </td>
+                          <td className="py-2.5 px-4 whitespace-nowrap text-slate-700">
+                          {a.placa || `Dispositivo ${a.id_dispositivo}`}
+                        </td>
                           <td className="py-2.5 px-4 text-slate-500 whitespace-nowrap">
                             {formatearFecha(a.fecha_hora)}
                           </td>
@@ -701,6 +730,36 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                 </tbody>
               </table>
             </div>
+
+            {/* Barra de paginación */}
+            {totalPaginasAlertas > 1 && (
+              <div className="flex items-center justify-between p-3.5 border-t border-slate-200 bg-slate-50/50 text-xs text-slate-500">
+                <span>
+                  Mostrando {indiceInicioAlertas + 1} - {Math.min(indiceInicioAlertas + elementosPorPaginaAlertas, totalAlertas)} de {totalAlertas}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setPaginaAlertas((prev) => Math.max(prev - 1, 1))}
+                    disabled={paginaAlertas === 1}
+                    className="p-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    title="Página anterior"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="px-2 font-medium text-slate-700">
+                    {paginaAlertas} / {totalPaginasAlertas}
+                  </span>
+                  <button
+                    onClick={() => setPaginaAlertas((prev) => Math.min(prev + 1, totalPaginasAlertas))}
+                    disabled={paginaAlertas === totalPaginasAlertas}
+                    className="p-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    title="Página siguiente"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         )}
 

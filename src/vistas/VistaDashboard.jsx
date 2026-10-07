@@ -76,6 +76,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
   async function cargarAlertas() {
     try {
       const data = await obtener_alertas_activas();
+      console.log("1. Alertas que devuelve api.js:", data);
       if (Array.isArray(data)) {
         setAlertas(data);
       }

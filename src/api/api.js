@@ -112,20 +112,31 @@ export async function obtener_lecturas_byunidad(id_dispositivo, limite=20) {
 
 // Obtener alertas desde la API
 export async function obtener_alertas_activas() {
-  const respuesta = await fetch(`${URL_BASE}/alertas/`,{
-        method: "GET",
-        headers: obtenerHeaders(),
+  // Se añade ?limite=50 igual que en el panel de admin por si el backend lo exige
+  const respuesta = await fetch(`${URL_BASE}/alertas/?limite=50`, {
+    method: "GET",
+    headers: obtenerHeaders(),
   });
+
   if (!respuesta.ok) {
     throw new Error("Error al obtener alertas");
   }
-  const datos = await respuesta.json();
 
-  // Filtramos para mostrar únicamente las alertas que aún no han sido atendidas (fecha_vista es null)
-  if (Array.isArray(datos)) {
-    return datos.filter((alerta) => !alerta.fecha_vista);
-  }
-  return [];
+  const datos = await respuesta.json();
+  console.log("-> [DEBUG API] Datos crudos recibidos del backend:", datos);
+
+  // Extrae el array tanto si viene plano como si viene envuelto
+  const lista = Array.isArray(datos)
+    ? datos
+    : (datos.alertas || datos.data || datos.items || []);
+
+  console.log("-> [DEBUG API] Lista de alertas extraída:", lista);
+
+  // Filtra las alertas pendientes (aquellas donde fecha_vista es null o no existe)
+  const activas = lista.filter((alerta) => !alerta.fecha_vista);
+  console.log("-> [DEBUG API] Alertas activas tras filtrar:", activas);
+
+  return activas;
 }
 
 //Obtener todas las alertas para auditoria
