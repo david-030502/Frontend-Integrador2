@@ -197,7 +197,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
               <div className="text-2xl font-bold text-slate-900 mt-2">
                 {telemetria.temperatura != null ? `${telemetria.temperatura} °C` : "N/D"}
               </div>
-              <p className="text-xs text-slate-500 mt-1">Rango: 22 - 32 °C</p>
+              <p className="text-xs text-slate-500 mt-1">Rango: 32 - 35 °C</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded p-4">
@@ -208,7 +208,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
               <div className="text-2xl font-bold text-slate-900 mt-2">
                 {telemetria.humedad != null ? `${telemetria.humedad} %` : "N/D"}
               </div>
-              <p className="text-xs text-slate-500 mt-1">Rango: 40 - 70 %</p>
+              <p className="text-xs text-slate-500 mt-1">Rango: 60 - 70 %</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded p-4">

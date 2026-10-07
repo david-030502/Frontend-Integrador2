@@ -74,18 +74,20 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
   //Paginacion
   const [paginaAlertas, setPaginaAlertas] = useState(1);
   const elementosPorPaginaAlertas = 15;
-  const listaAlertas = Array.isArray(alertas) 
-  ? alertas 
-  : (alertas?.alertas || alertas?.data || []);
 
-  const totalAlertas = listaAlertas.length;
-  const totalPaginasAlertas = Math.ceil(totalAlertas / elementosPorPaginaAlertas);
-  const indiceInicioAlertas = (paginaAlertas - 1) * elementosPorPaginaAlertas;
-  const alertasVisibles = listaAlertas.slice(
-    indiceInicioAlertas, 
-    indiceInicioAlertas + elementosPorPaginaAlertas
-  );
+  const listaAlertas = Array.isArray(alertas)
+    ? alertas
+    : (alertas?.alertas || []);
 
+  const totalAlertas = alertas?.total ?? 0;
+  const totalPaginasAlertas = alertas?.total_paginas ?? 0;
+
+  const indiceInicioAlertas =
+    totalAlertas === 0
+      ? 0
+      : (paginaAlertas - 1) * elementosPorPaginaAlertas;
+
+  const alertasVisibles = listaAlertas;
   // Carga de datos
   const cargarUsuarios = async () => {
     setCargandoUsuarios(true);
@@ -113,12 +115,17 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
     }
   };
 
-  const cargarAlertas = async () => {
+  const cargarAlertas = async (pagina = paginaAlertas) => {
     setCargandoAlertas(true);
     setErrorGlobal("");
+
     try {
-      const data = await listar_historial_alertas(50);
-      setAlertas(data || []);
+      const data = await listar_historial_alertas(
+        pagina,
+        elementosPorPaginaAlertas
+      );
+
+      setAlertas(data || {});
     } catch (err) {
       setErrorGlobal(err.message || "Error al obtener el historial de alertas.");
     } finally {
@@ -739,7 +746,11 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => setPaginaAlertas((prev) => Math.max(prev - 1, 1))}
+                    onClick={() => {
+                      const nuevaPagina = Math.max(paginaAlertas - 1, 1);
+                      setPaginaAlertas(nuevaPagina);
+                      cargarAlertas(nuevaPagina);
+                    }}
                     disabled={paginaAlertas === 1}
                     className="p-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     title="Página anterior"
@@ -750,7 +761,14 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
                     {paginaAlertas} / {totalPaginasAlertas}
                   </span>
                   <button
-                    onClick={() => setPaginaAlertas((prev) => Math.min(prev + 1, totalPaginasAlertas))}
+                    onClick={() => {
+                      const nuevaPagina = Math.min(
+                        paginaAlertas + 1,
+                        totalPaginasAlertas
+                      );
+                      setPaginaAlertas(nuevaPagina);
+                      cargarAlertas(nuevaPagina);
+                    }}
                     disabled={paginaAlertas === totalPaginasAlertas}
                     className="p-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     title="Página siguiente"

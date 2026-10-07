@@ -140,14 +140,19 @@ export async function obtener_alertas_activas() {
 }
 
 //Obtener todas las alertas para auditoria
-export async function listar_historial_alertas(limite=50) {
-  const respuesta = await fetch(`${URL_BASE}/alertas/?limite=${limite}`,{
+export async function listar_historial_alertas(pagina = 1, limite = 15) {
+  const respuesta = await fetch(
+    `${URL_BASE}/alertas/?pagina=${pagina}&limite=${limite}`,
+    {
       method: "GET",
       headers: obtenerHeaders(),
-  });
-  if (!respuesta.ok){
+    }
+  );
+
+  if (!respuesta.ok) {
     throw new Error("Error al obtener historial de alertas");
   }
+
   return await respuesta.json();
 }
 
