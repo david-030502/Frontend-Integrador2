@@ -1,5 +1,5 @@
 // src/componentes/tabla_alertas.jsx
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { AlertCircle, CheckCircle2, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function TablaAlertas({ alertas, onAtenderAlerta }) {
@@ -10,11 +10,9 @@ export default function TablaAlertas({ alertas, onAtenderAlerta }) {
   const totalPaginas = Math.ceil(totalAlertas / elementosPorPagina);
 
   // Reajusta la página si se atienden alertas y la página actual queda vacía
-  useEffect(() => {
-    if (paginaActual > totalPaginas && totalPaginas > 0) {
-      setPaginaActual(totalPaginas);
-    }
-  }, [totalAlertas, totalPaginas, paginaActual]);
+  if (paginaActual > totalPaginas && totalPaginas > 0) {
+    setPaginaActual(totalPaginas);
+  }
 
   if (!alertas || alertas.length === 0) {
     return (

@@ -1,5 +1,5 @@
 // src/views/LoginView.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { iniciar_sesion } from "../api/api";
 import { AlertCircle } from "lucide-react";
 

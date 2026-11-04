@@ -1,5 +1,5 @@
 // src/views/DashboardView.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { 
   listar_dispositivos, 
   obtener_ultimo_registro_byunidad,
@@ -40,7 +40,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
         if (data?.length > 0) {
           setCamionSeleccionado(data[0].id_dispositivo);
         }
-      } catch (err) {
+      } catch {
         setError("Error al cargar la flota de camiones");
       }
     }
@@ -55,7 +55,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
       try {
         const dataUltima = await obtener_ultimo_registro_byunidad(camionSeleccionado);
         setTelemetria(dataUltima);
-      } catch (err) {
+      } catch {
         setTelemetria(null);
       }
 
@@ -64,7 +64,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
         if (Array.isArray(dataHistorial)) {
           setHistorial([...dataHistorial].reverse());
         }
-      } catch (err) {
+      } catch {
         setHistorial([]);
       }
     }
@@ -88,8 +88,11 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
   }
 
   useEffect(() => {
-    cargarAlertas();
-    const intervalo = setInterval(cargarAlertas, 10000);
+    async function consultarAlertas() {
+      cargarAlertas();
+    }
+    consultarAlertas();
+    const intervalo = setInterval(consultarAlertas, 10000);
     return () => clearInterval(intervalo);
   }, []);
 
@@ -99,7 +102,7 @@ export default function VistaDashboard({ usuario, onCerrarSesion, onIrAAdmin }) 
       const idUsuarioActual = usuario?.id_usuario || 1;
       await atender_alerta(idAlerta, idUsuarioActual);
       cargarAlertas();
-    } catch (err) {
+    } catch {
       alert("No se pudo marcar la alerta como atendida");
     }
   };

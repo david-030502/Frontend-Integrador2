@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function ModalBug({ abierto, alCerrar }) {
   const [enviando, setEnviando] = useState(false);

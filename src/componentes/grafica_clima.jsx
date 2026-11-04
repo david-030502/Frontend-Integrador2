@@ -1,5 +1,4 @@
 // src/components/GraficaMicroclima.jsx
-import React from "react";
 import {
   LineChart,
   Line,

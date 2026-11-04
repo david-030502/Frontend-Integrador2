@@ -1,26 +1,27 @@
 // src/App.jsx
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import VistaLogin from "./vistas/VistaLogin";
 import VistaDashboard from "./vistas/VistaDashboard";
 import VistaAdmin from "./vistas/VistaAdmin";
 
-export default function App() {
-  const [usuarioActivo, setUsuarioActivo] = useState(null);
-  const [vistaActual, setVistaActual] = useState("admin"); // 'admin' o 'dashboard'
+function leerSesionGuardada() {
+  const sesionGuardada = localStorage.getItem("usuario_sesion");
+  if (!sesionGuardada) return null;
+  try {
+    return JSON.parse(sesionGuardada);
+  } catch {
+    localStorage.removeItem("usuario_sesion");
+    return null;
+  }
+}
 
-  // Comprobar si ya había iniciado sesión previamente
-  useEffect(() => {
-    const sesionGuardada = localStorage.getItem("usuario_sesion");
-    if (sesionGuardada) {
-      try {
-        const datos = JSON.parse(sesionGuardada);
-        setUsuarioActivo(datos);
-        setVistaActual(datos.rol?.toLowerCase() === "admin" ? "admin" : "dashboard");
-      } catch (e) {
-        localStorage.removeItem("usuario_sesion");
-      }
-    }
-  }, []);
+export default function App() {
+  const [usuarioActivo, setUsuarioActivo] = useState(leerSesionGuardada);
+  const [vistaActual, setVistaActual] = useState(() => {
+    const datos = leerSesionGuardada();
+    if (!datos) return "admin";
+    return datos.rol?.toLowerCase() === "admin" ? "admin" : "dashboard";
+  });
 
   const manejarLoginExitoso = (datos) => {
     setUsuarioActivo(datos);

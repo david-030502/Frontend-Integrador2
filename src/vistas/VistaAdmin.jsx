@@ -1,7 +1,6 @@
 // src/vistas/VistaAdmin.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
-  ShieldCheck,
   LogOut,
   Truck,
   Users,
@@ -9,7 +8,6 @@ import {
   Activity,
   UserPlus,
   PlusCircle,
-  RefreshCw,
   X,
   CheckCircle2,
   AlertCircle,
@@ -134,9 +132,12 @@ export default function VistaAdmin({ usuario, onCerrarSesion, onIrADashboard }) 
   };
 
   useEffect(() => {
-    cargarUsuarios();
-    cargarDispositivos();
-    cargarAlertas();
+    async function cargarDatosIniciales() {
+      cargarUsuarios();
+      cargarDispositivos();
+      cargarAlertas();
+    }
+    cargarDatosIniciales();
   }, []);
 
   // Registrar Usuario
